@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saman - Admin Panel</title>
+  
+  <!-- Global Error Logger Overlay (Visual feedback if scripts break) -->
+  <script>
+    window.addEventListener('error', function(e) {
+      // Ignore cross-origin script errors and external CDN/Firebase warnings
+      if (e.message === "Script error." || !e.filename || e.filename.indexOf('gstatic.com') !== -1 || e.lineno === 0) {
+        return;
+      }
+      var div = document.getElementById('debug-error-box');
+      if (!div) {
+        div = document.createElement('div');
+        div.id = 'debug-error-box';
+        div.style.position = 'fixed';
+        div.style.bottom = '0';
+        div.style.left = '0';
+        div.style.width = '100%';
+        div.style.background = 'rgba(220, 53, 69, 0.98)';
+        div.style.color = '#ffffff';
+        div.style.padding = '15px';
+        div.style.zIndex = '999999';
+        div.style.fontFamily = 'monospace';
+        div.style.fontSize = '13px';
+        div.style.lineHeight = '1.4';
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.boxSizing = 'border-box';
+        div.style.borderTop = '3px solid #ff5f5f';
+        div.style.direction = 'ltr';
+        div.style.textAlign = 'left';
+        document.documentElement.appendChild(div);
+      }
+      div.innerHTML = '<strong>JavaScript Error Detected:</strong><br>' + e.message + '<br><br><strong>File:</strong> ' + e.filename + '<br><strong>Line:</strong> ' + e.lineno + ':' + e.colno;
+    });
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Firebase SDKs Compat -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  
+  <!-- Config & DB layers -->
+  <script src="firebase-config.js?v=2"></script>
+  <script src="db.js?v=2"></script>
+</head>
+
+<body class="admin-body lang-en"> <!-- Admin panel uses English layout as requested -->
+
+  <!-- Beautiful Loading Screen -->
+  <div id="admin-loader">
+    <div class="spinner"></div>
+    <img src="assets/logo.png" alt="Logo" class="loader-logo" id="loader-logo-img">
+    <div style="font-weight: 600; color: var(--accent-color); letter-spacing: 2px; margin-top: 10px;">SAMAN PANEL</div>
+  </div>
+
+  <!-- Login Section -->
+  <div id="login-container" class="login-wrapper" style="display: none;">
+    <div class="login-card">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+        <div class="lang-selector" style="position: static; backdrop-filter: none; background: rgba(0,0,0,0.3);">
+          <button type="button" class="lang-btn" onclick="setAdminLanguage('ku')" id="btn-login-lang-ku">کوردى</button>
+          <button type="button" class="lang-btn" onclick="setAdminLanguage('ar')" id="btn-login-lang-ar">العربية</button>
+          <button type="button" class="lang-btn active" onclick="setAdminLanguage('en')" id="btn-login-lang-en">English</button>
+        </div>
+      </div>
+      <img src="assets/logo.png" alt="Saman Logo" class="admin-logo-large" id="login-logo-img">
+      <h1 class="login-title" data-i18n="loginTitle">Saman Dashboard</h1>
+      <p class="login-subtitle" data-i18n="loginSubtitle">Please enter your credentials to login</p>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="username" data-i18n="usernameLabel">Username</label>
+          <input class="form-input" type="text" id="username" required data-i18n-placeholder="usernamePlaceholder" placeholder="e.g. hama">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password" data-i18n="passwordLabel">Password</label>
+          <input class="form-input" type="password" id="password" required placeholder="•••••">
+        </div>
+        <button class="login-btn" type="submit" data-i18n="loginBtn">Login</button>
+        <div id="login-error" class="login-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard Section -->
+  <div id="dashboard-container" class="dashboard-wrapper" style="display: none;">
+
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <img src="assets/logo.png" alt="Saman Logo" class="dashboard-logo" id="dash-logo-img">
+        <span class="dashboard-title" id="dash-brand-title">Saman Admin</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="lang-selector" style="position: static; backdrop-filter: none; background: rgba(0,0,0,0.3);">
+          <button type="button" class="lang-btn" onclick="setAdminLanguage('ku')" id="btn-lang-ku">کوردى</button>
+          <button type="button" class="lang-btn" onclick="setAdminLanguage('ar')" id="btn-lang-ar">العربية</button>
+          <button type="button" class="lang-btn active" onclick="setAdminLanguage('en')" id="btn-lang-en">English</button>
+        </div>
+        <button class="logout-btn" onclick="handleLogout()" data-i18n="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <!-- Dashboard Tabs -->
+    <nav class="dashboard-tabs">
+      <button class="tab-btn active" onclick="switchTab(0)" id="tab-btn-0" data-i18n="tabAddCategory">Add Category</button>
+      <button class="tab-btn" onclick="switchTab(1)" id="tab-btn-1" data-i18n="tabManageItems">Add & Manage Items</button>
+      <button class="tab-btn" onclick="switchTab(2)" id="tab-btn-2" data-i18n="tabSettings">Settings</button>
+    </nav>
+
+    <!-- Dashboard Main Content -->
+    <main class="dashboard-content">
+
+      <!-- SECTION 1: Adding a Category -->
+      <section class="tab-panel active" id="tab-panel-0">
+        <div class="section-card">
+          <h2 class="section-title" data-i18n="createCategoryTitle">Create New Category</h2>
+
+          <form id="add-category-form" onsubmit="addCategory(event)">
+            <div class="form-group">
+              <label class="form-label" data-i18n="catNameEnLabel">Category Name (English)</label>
+              <input class="form-input" type="text" id="cat-name-en" required data-i18n-placeholder="catNameEnPlaceholder" placeholder="e.g. Hot Drinks">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="catNameArLabel">Category Name (Arabic)</label>
+              <input class="form-input ltr-text" type="text" id="cat-name-ar" required data-i18n-placeholder="catNameArPlaceholder"
+                placeholder="مثال: مشروبات ساخنة">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="catNameKuLabel">Category Name (Kurdish Badini)</label>
+              <input class="form-input ltr-text" type="text" id="cat-name-ku" required data-i18n-placeholder="catNameKuPlaceholder"
+                placeholder="مثال: ڤەخوارنێن گەرم">
+            </div>
+
+            <!-- Image Upload -->
+            <div class="form-group">
+              <label class="form-label" data-i18n="catImageLabel">Category Image</label>
+              <div class="file-upload-container">
+                <div class="file-upload-icon">↑</div>
+                <div class="file-upload-text" data-i18n="uploadPlaceholder">Tap here to upload from phone or file</div>
+                <input class="file-upload-input" type="file" id="cat-image-file" accept="image/*"
+                  onchange="previewImage(this, 'cat-img-preview')">
+              </div>
+              <div class="preview-container">
+                <img id="cat-img-preview" class="image-preview"
+                  src="https://images.unsplash.com/photo-1541167760496-1628856ab772?w=400&q=80" alt="Preview">
+              </div>
+            </div>
+
+            <button class="submit-btn" type="submit" data-i18n="addCategoryBtn">Add Category</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- SECTION 2: Adding and Managing Items -->
+      <section class="tab-panel" id="tab-panel-1">
+        <!-- Part A: Add Item -->
+        <div class="section-card">
+          <h2 class="section-title" data-i18n="createItemTitle">Create New Item</h2>
+
+          <form id="add-item-form" onsubmit="addItem(event)">
+            <div class="form-group">
+              <label class="form-label" data-i18n="selectCategoryLabel">Select Category</label>
+              <select class="form-input" id="item-category-select" required>
+                <!-- Dynamically filled -->
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" data-i18n="itemNameEnLabel">Item Name (English)</label>
+                <input class="form-input" type="text" id="item-name-en" required data-i18n-placeholder="itemNameEnPlaceholder" placeholder="e.g. Cappuccino">
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="priceLabel">Price (IQD)</label>
+                <input class="form-input" type="number" id="item-price" required data-i18n-placeholder="pricePlaceholder" placeholder="e.g. 4500">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="itemNameArLabel">Item Name (Arabic)</label>
+              <input class="form-input ltr-text" type="text" id="item-name-ar" required data-i18n-placeholder="itemNameArPlaceholder" placeholder="مثال: كابتشينو">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="itemNameKuLabel">Item Name (Kurdish Badini)</label>
+              <input class="form-input ltr-text" type="text" id="item-name-ku" required data-i18n-placeholder="itemNameKuPlaceholder" placeholder="مثال: كاپوچينۆ">
+            </div>
+
+            <!-- Image Upload -->
+            <div class="form-group">
+              <label class="form-label" data-i18n="itemImageLabel">Item Image</label>
+              <div class="file-upload-container">
+                <div class="file-upload-icon">↑</div>
+                <div class="file-upload-text" data-i18n="uploadPlaceholder">Tap here to upload from phone or file</div>
+                <input class="file-upload-input" type="file" id="item-image-file" accept="image/*"
+                  onchange="previewImage(this, 'item-img-preview')">
+              </div>
+              <div class="preview-container">
+                <img id="item-img-preview" class="image-preview"
+                  src="https://images.unsplash.com/photo-1510707577719-fa7c18305222?w=400&q=80" alt="Preview">
+              </div>
+            </div>
+
+            <button class="submit-btn" type="submit" data-i18n="addItemBtn">Add Item</button>
+          </form>
+        </div>
+
+        <!-- Part B: Manage / Edit & Delete Items list -->
+        <div class="section-card">
+          <h2 class="section-title" data-i18n="manageItemsTitle">Manage Items</h2>
+          <div class="admin-items-container" id="admin-items-list">
+            <!-- Dynamically populated list with edit and delete options -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: Settings -->
+      <section class="tab-panel" id="tab-panel-2">
+        <div class="section-card">
+          <h2 class="section-title" data-i18n="sliderTitle">Header Slider Images (Changes every 1.5s)</h2>
+
+          <div class="setting-bg-grid">
+            <!-- Background Image 1 -->
+            <div class="setting-bg-item" onclick="triggerBgUpload(1)">
+              <img id="setting-bg-1" class="setting-bg-img" src="assets/bg1.png" alt="Slider 1">
+              <div class="setting-bg-label"><span data-i18n="slideLabel">Slide</span> 1</div>
+              <input type="file" id="bg-file-1" accept="image/*" style="display: none;"
+                onchange="updateSliderImage(1, this)">
+            </div>
+
+            <!-- Background Image 2 -->
+            <div class="setting-bg-item" onclick="triggerBgUpload(2)">
+              <img id="setting-bg-2" class="setting-bg-img" src="assets/bg2.png" alt="Slider 2">
+              <div class="setting-bg-label"><span data-i18n="slideLabel">Slide</span> 2</div>
+              <input type="file" id="bg-file-2" accept="image/*" style="display: none;"
+                onchange="updateSliderImage(2, this)">
+            </div>
+
+            <!-- Background Image 3 -->
+            <div class="setting-bg-item" onclick="triggerBgUpload(3)">
+              <img id="setting-bg-3" class="setting-bg-img" src="assets/bg3.png" alt="Slider 3">
+              <div class="setting-bg-label"><span data-i18n="slideLabel">Slide</span> 3</div>
+              <input type="file" id="bg-file-3" accept="image/*" style="display: none;"
+                onchange="updateSliderImage(3, this)">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title" data-i18n="logoTitle">Brand Circular Logo</h2>
+
+          <div class="logo-settings-container">
+            <img id="setting-logo-preview" class="logo-settings-preview" src="assets/logo.png" alt="Logo Preview">
+            <div style="flex-grow: 1;">
+              <div class="file-upload-container" style="margin-bottom: 0;">
+                <div class="file-upload-text" data-i18n="uploadLogoLabel">Upload new brand logo</div>
+                <input class="file-upload-input" type="file" accept="image/*" onchange="updateLogoImage(this)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location Management Section -->
+        <div class="section-card">
+          <h2 class="section-title">
+            <svg style="width: 20px; height: 20px; fill: var(--accent-color); vertical-align: middle; margin-right: 6px;" viewBox="0 0 24 24">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <span data-i18n="locationTitle">Cafeteria Location</span>
+          </h2>
+
+          <form id="location-settings-form" onsubmit="saveLocationSettings(event)">
+            <div class="form-group">
+              <label class="form-label" data-i18n="locationEnLabel">Location (English)</label>
+              <input class="form-input" type="text" id="setting-location-en" data-i18n-placeholder="locationEnPlaceholder" placeholder="e.g. Duhok, Kurdistan Region, Iraq">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="locationArLabel">Location (Arabic)</label>
+              <input class="form-input ltr-text" type="text" id="setting-location-ar" data-i18n-placeholder="locationArPlaceholder" placeholder="مثال: دهوك، إقليم كردستان، العراق">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="locationKuLabel">Location (Kurdish Badini)</label>
+              <input class="form-input ltr-text" type="text" id="setting-location-ku" data-i18n-placeholder="locationKuPlaceholder" placeholder="مثال: دهۆک، هەرێمی کوردستان، عێراق">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="mapsLinkLabel">Google Maps Link (Optional)</label>
+              <input class="form-input" type="url" id="setting-location-map-url" data-i18n-placeholder="mapUrlPlaceholder" placeholder="https://maps.google.com/...">
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;" data-i18n="mapsHelpText">
+                Paste a Google Maps share link so customers can tap to navigate to your cafeteria
+              </div>
+            </div>
+
+            <button class="submit-btn" type="submit">
+              <svg style="width: 18px; height: 18px; fill: currentColor; vertical-align: middle; margin-right: 4px;" viewBox="0 0 24 24">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              <span data-i18n="saveLocationBtn">Save Location</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- EDIT ITEM DIALOG MODAL -->
+  <div class="modal-overlay" id="edit-item-modal">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--accent-color);" data-i18n="editItemTitle">Edit Menu Item</h2>
+        <button class="close-btn" onclick="closeEditModal()">&times;</button>
+      </div>
+
+      <form id="edit-item-form" onsubmit="saveEditedItem(event)">
+        <input type="hidden" id="edit-item-id">
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="editCategoryLabel">Category</label>
+          <select class="form-input" id="edit-item-category" required>
+            <!-- Dynamically filled -->
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" data-i18n="itemNameEnLabel">Item Name (English)</label>
+            <input class="form-input" type="text" id="edit-item-name-en" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="priceLabel">Price (IQD)</label>
+            <input class="form-input" type="number" id="edit-item-price" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="itemNameArLabel">Item Name (Arabic)</label>
+          <input class="form-input ltr-text" type="text" id="edit-item-name-ar" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="itemNameKuLabel">Item Name (Kurdish Badini)</label>
+          <input class="form-input ltr-text" type="text" id="edit-item-name-ku" required>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="changeImageLabel">Change Image</label>
+          <div class="file-upload-container">
+            <div class="file-upload-icon">↑</div>
+            <div class="file-upload-text" data-i18n="uploadPlaceholder">Upload new item image</div>
+            <input class="file-upload-input" type="file" id="edit-item-image-file" accept="image/*"
+              onchange="previewImage(this, 'edit-item-img-preview')">
+          </div>
+          <div class="preview-container">
+            <img id="edit-item-img-preview" class="image-preview" src="" alt="Preview">
+          </div>
+        </div>
+
+        <button class="submit-btn" type="submit" data-i18n="saveChangesBtn">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-box"></div>
+
+  <!-- JS Logic -->
+  <script src="admin.js?v=2" defer></script>
+</body>
+
+</html>
