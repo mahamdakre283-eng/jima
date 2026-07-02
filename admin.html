@@ -158,6 +158,14 @@
             <button class="submit-btn" type="submit" data-i18n="addCategoryBtn">Add Category</button>
           </form>
         </div>
+
+        <!-- Part B: Manage / Edit & Delete Categories list -->
+        <div class="section-card">
+          <h2 class="section-title" data-i18n="manageCategoriesTitle">Manage Categories</h2>
+          <div class="admin-items-container" id="admin-categories-list">
+            <!-- Dynamically populated list with edit and delete options -->
+          </div>
+        </div>
       </section>
 
       <!-- SECTION 2: Adding and Managing Items -->
@@ -269,6 +277,40 @@
           </div>
         </div>
 
+        <!-- Restaurant Name Management Section -->
+        <div class="section-card">
+          <h2 class="section-title">
+            <svg style="width: 20px; height: 20px; fill: var(--accent-color); vertical-align: middle; margin-right: 6px;" viewBox="0 0 24 24">
+              <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+            </svg>
+            <span data-i18n="restaurantNameTitle">Restaurant Name</span>
+          </h2>
+
+          <form id="name-settings-form" onsubmit="saveNameSettings(event)">
+            <div class="form-group">
+              <label class="form-label" data-i18n="restaurantNameEnLabel">Name (English)</label>
+              <input class="form-input" type="text" id="setting-name-en" placeholder="e.g. Saman Cafeteria">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="restaurantNameArLabel">Name (Arabic)</label>
+              <input class="form-input ltr-text" type="text" id="setting-name-ar" placeholder="مثال: كافتيريا سامان">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="restaurantNameKuLabel">Name (Kurdish Badini)</label>
+              <input class="form-input ltr-text" type="text" id="setting-name-ku" placeholder="مثال: کافتریای سامان">
+            </div>
+
+            <button class="submit-btn" type="submit">
+              <svg style="width: 18px; height: 18px; fill: currentColor; vertical-align: middle; margin-right: 4px;" viewBox="0 0 24 24">
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+              </svg>
+              <span data-i18n="saveNameBtn">Save Name</span>
+            </button>
+          </form>
+        </div>
+
         <!-- Location Management Section -->
         <div class="section-card">
           <h2 class="section-title">
@@ -365,6 +407,51 @@
           </div>
           <div class="preview-container">
             <img id="edit-item-img-preview" class="image-preview" src="" alt="Preview">
+          </div>
+        </div>
+
+        <button class="submit-btn" type="submit" data-i18n="saveChangesBtn">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT CATEGORY DIALOG MODAL -->
+  <div class="modal-overlay" id="edit-category-modal">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--accent-color);" data-i18n="editCategoryTitle">Edit Category</h2>
+        <button class="close-btn" onclick="closeEditCategoryModal()">&times;</button>
+      </div>
+
+      <form id="edit-category-form" onsubmit="saveEditedCategory(event)">
+        <input type="hidden" id="edit-category-id">
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="catNameEnLabel">Category Name (English)</label>
+          <input class="form-input" type="text" id="edit-cat-name-en" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="catNameArLabel">Category Name (Arabic)</label>
+          <input class="form-input ltr-text" type="text" id="edit-cat-name-ar" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="catNameKuLabel">Category Name (Kurdish Badini)</label>
+          <input class="form-input ltr-text" type="text" id="edit-cat-name-ku" required>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="changeImageLabel">Change Image</label>
+          <div class="file-upload-container">
+            <div class="file-upload-icon">↑</div>
+            <div class="file-upload-text" data-i18n="uploadPlaceholder">Upload new category image</div>
+            <input class="file-upload-input" type="file" id="edit-cat-image-file" accept="image/*"
+              onchange="previewImage(this, 'edit-cat-img-preview')">
+          </div>
+          <div class="preview-container">
+            <img id="edit-cat-img-preview" class="image-preview" src="" alt="Preview">
           </div>
         </div>
 

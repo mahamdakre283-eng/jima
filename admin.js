@@ -47,6 +47,17 @@ const T = {
     saveLocationBtn: "Save Location",
     editCategoryLabel: "Category",
     confirmDelete: "Are you sure you want to delete the item \"{name}\"?",
+    restaurantNameTitle: "Restaurant Name",
+    restaurantNameEnLabel: "Name (English)",
+    restaurantNameArLabel: "Name (Arabic)",
+    restaurantNameKuLabel: "Name (Kurdish Badini)",
+    saveNameBtn: "Save Name",
+    successName: "Name Updated Successfully!",
+    manageCategoriesTitle: "Manage Categories",
+    editCategoryTitle: "Edit Category",
+    confirmDeleteCategory: "Are you sure you want to delete the category \"{name}\"?",
+    successEditCat: "Category Saved Successfully!",
+    successDeleteCat: "Category deleted successfully",
     successAddCat: "Category Added Successfully!",
     successAddItem: "Item Added Successfully!",
     successEditItem: "Item Saved Successfully!",
@@ -113,6 +124,17 @@ const T = {
     saveLocationBtn: "حفظ الموقع",
     editCategoryLabel: "القسم",
     confirmDelete: "هل أنت متأكد من حذف العنصر \"{name}\"؟",
+    restaurantNameTitle: "اسم المطعم",
+    restaurantNameEnLabel: "الاسم (بالإنجليزية)",
+    restaurantNameArLabel: "الاسم (بالعربية)",
+    restaurantNameKuLabel: "الاسم (بالكردية بادينية)",
+    saveNameBtn: "حفظ الاسم",
+    successName: "تم تحديث الاسم بنجاح!",
+    manageCategoriesTitle: "إدارة الأقسام",
+    editCategoryTitle: "تعديل القسم",
+    confirmDeleteCategory: "هل أنت متأكد من حذف القسم \"{name}\"؟",
+    successEditCat: "تم حفظ القسم بنجاح!",
+    successDeleteCat: "تم حذف القسم بنجاح",
     successAddCat: "تم إضافة القسم بنجاح!",
     successAddItem: "تم إضافة العنصر بنجاح!",
     successEditItem: "تم حفظ العنصر بنجاح!",
@@ -179,6 +201,17 @@ const T = {
     saveLocationBtn: "پاراستنا جهی",
     editCategoryLabel: "پشک",
     confirmDelete: "تە دڤێت بابەتێ \"{name}\" رەشبکەی؟",
+    restaurantNameTitle: "ناڤێ خارنگەهێ",
+    restaurantNameEnLabel: "ناڤ ب ئینگلیزي",
+    restaurantNameArLabel: "ناڤ ب عەرەبي",
+    restaurantNameKuLabel: "ناڤ ب کوردی بادیني",
+    saveNameBtn: "پاراستنا ناڤی",
+    successName: "ناڤ ب سەرکەفتن هاتە نووکرن!",
+    manageCategoriesTitle: "رێڤەبەریا پشکان",
+    editCategoryTitle: "دەستکاریکرنا پشکی",
+    confirmDeleteCategory: "تە دڤێت پشکا \"{name}\" رەشبکەی؟",
+    successEditCat: "پشک ب سەرکەفتن هاتە پاراستن!",
+    successDeleteCat: "پشک ب سەرکەفتن هاتە رەشکرن",
     successAddCat: "پشک ب سەرکەفتن هاتە زێدەکرن!",
     successAddItem: "بابەت ب سەرکەفتن هاتە زێدەکرن!",
     successEditItem: "بابەت ب سەرکەفتن هاتە پاراستن!",
@@ -219,6 +252,7 @@ const el = {
 
   // Forms
   get addCategoryForm() { return document.getElementById("add-category-form"); },
+  get editCategoryForm() { return document.getElementById("edit-category-form"); },
   get addItemForm() { return document.getElementById("add-item-form"); },
   get editItemForm() { return document.getElementById("edit-item-form"); },
 
@@ -228,6 +262,15 @@ const el = {
   get catNameKu() { return document.getElementById("cat-name-ku"); },
   get catImageFile() { return document.getElementById("cat-image-file"); },
   get catImgPreview() { return document.getElementById("cat-img-preview"); },
+
+  // Inputs Edit Category Modal
+  get editCategoryId() { return document.getElementById("edit-category-id"); },
+  get editCatNameEn() { return document.getElementById("edit-cat-name-en"); },
+  get editCatNameAr() { return document.getElementById("edit-cat-name-ar"); },
+  get editCatNameKu() { return document.getElementById("edit-cat-name-ku"); },
+  get editCatImageFile() { return document.getElementById("edit-cat-image-file"); },
+  get editCatImgPreview() { return document.getElementById("edit-cat-img-preview"); },
+  get editCategoryModal() { return document.getElementById("edit-category-modal"); },
 
   // Inputs Item
   get itemCategorySelect() { return document.getElementById("item-category-select"); },
@@ -254,12 +297,16 @@ const el = {
   get settingBg2() { return document.getElementById("setting-bg-2"); },
   get settingBg3() { return document.getElementById("setting-bg-3"); },
   get settingLogoPreview() { return document.getElementById("setting-logo-preview"); },
+  get settingNameEn() { return document.getElementById("setting-name-en"); },
+  get settingNameAr() { return document.getElementById("setting-name-ar"); },
+  get settingNameKu() { return document.getElementById("setting-name-ku"); },
   get settingLocationEn() { return document.getElementById("setting-location-en"); },
   get settingLocationAr() { return document.getElementById("setting-location-ar"); },
   get settingLocationKu() { return document.getElementById("setting-location-ku"); },
   get settingLocationMapUrl() { return document.getElementById("setting-location-map-url"); },
 
   // Lists
+  get adminCategoriesList() { return document.getElementById("admin-categories-list"); },
   get adminItemsList() { return document.getElementById("admin-items-list"); },
 
   // Header Logo & Name
@@ -407,6 +454,12 @@ function updateBrandingPreload() {
   }
   el.settingLogoPreview.src = logo;
 
+  // Pre-load restaurant name settings
+  if (!settings.restaurantName) settings.restaurantName = { en: "", ar: "", ku: "" };
+  if (el.settingNameEn) el.settingNameEn.value = settings.restaurantName.en || "";
+  if (el.settingNameAr) el.settingNameAr.value = settings.restaurantName.ar || "";
+  if (el.settingNameKu) el.settingNameKu.value = settings.restaurantName.ku || "";
+
   // Pre-load location settings
   const location = settings.location || {};
   if (el.settingLocationEn) el.settingLocationEn.value = location.en || "";
@@ -429,6 +482,7 @@ function showDashboard() {
   // Refresh Lists
   refreshCategoriesDropdowns();
   renderManageItems();
+  renderManageCategories();
 }
 
 // 2c. Login Handler
@@ -473,7 +527,9 @@ function switchTab(idx) {
     else panel.classList.remove("active");
   });
 
-  if (idx === 1) {
+  if (idx === 0) {
+    renderManageCategories();
+  } else if (idx === 1) {
     // Manage items tab: refresh select list and item lists
     refreshCategoriesDropdowns();
     renderManageItems();
@@ -532,6 +588,7 @@ async function addCategory(event) {
   el.catImgPreview.src = "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=400&q=80";
 
   refreshCategoriesDropdowns();
+  renderManageCategories();
 }
 
 // 5b. Refresh dropdowns
@@ -557,6 +614,127 @@ function refreshCategoriesDropdowns() {
     el.itemCategorySelect.innerHTML += option;
     el.editItemCategory.innerHTML += option;
   });
+}
+
+// 5c. Manage Categories: Render List
+function renderManageCategories() {
+  const categories = DB.getCategories();
+  if (el.adminCategoriesList) {
+    el.adminCategoriesList.innerHTML = "";
+
+    if (categories.length === 0) {
+      el.adminCategoriesList.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 20px;">No categories found. Add some to populate the list!</div>`;
+      return;
+    }
+
+    categories.forEach(cat => {
+      const catImg = cat.image || "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=400&q=80";
+      const catName = cat.name[currentAdminLang] || cat.name.en || cat.name.ku || cat.name.ar;
+
+      const row = document.createElement("div");
+      row.className = "admin-item-card";
+      row.innerHTML = `
+        <img src="${catImg}" alt="${catName}" class="admin-item-img">
+        <div class="admin-item-details">
+          <h4 class="admin-item-name">${catName}</h4>
+        </div>
+        <div class="admin-item-actions">
+          <button class="action-icon-btn edit-btn" onclick="openEditCategoryModal('${cat.id}')" aria-label="Edit Category">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+          </button>
+          <button class="action-icon-btn delete-btn" onclick="deleteCategory('${cat.id}')" aria-label="Delete Category">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+          </button>
+        </div>
+      `;
+      el.adminCategoriesList.appendChild(row);
+    });
+  }
+}
+
+// 5d. Delete Category
+function deleteCategory(catId) {
+  const categories = DB.getCategories();
+  const catIndex = categories.findIndex(c => c.id === catId);
+  if (catIndex === -1) return;
+
+  const catName = categories[catIndex].name[currentAdminLang] || categories[catIndex].name.en;
+
+  if (confirm(T[currentAdminLang].confirmDeleteCategory.replace("{name}", catName))) {
+    categories.splice(catIndex, 1);
+    DB.saveCategories(categories);
+    showToast(T[currentAdminLang].successDeleteCat, "success");
+    refreshCategoriesDropdowns();
+    renderManageCategories();
+  }
+}
+
+// 5e. Edit Category Modal Handling
+function openEditCategoryModal(catId) {
+  const categories = DB.getCategories();
+  const cat = categories.find(c => c.id === catId);
+  if (!cat) return;
+
+  el.editCategoryId.value = cat.id;
+  el.editCatNameEn.value = cat.name.en || "";
+  el.editCatNameAr.value = cat.name.ar || "";
+  el.editCatNameKu.value = cat.name.ku || "";
+  el.editCatImgPreview.src = cat.image || "";
+  el.editCatImageFile.value = ""; // Reset file input
+
+  el.editCategoryModal.classList.add("active");
+}
+
+function closeEditCategoryModal() {
+  el.editCategoryModal.classList.remove("active");
+}
+
+async function saveEditedCategory(event) {
+  event.preventDefault();
+
+  const id = el.editCategoryId.value;
+  const categories = DB.getCategories();
+  const catIndex = categories.findIndex(c => c.id === id);
+
+  if (catIndex === -1) {
+    showToast("Category not found", "error");
+    closeEditCategoryModal();
+    return;
+  }
+
+  const nameEn = el.editCatNameEn.value.trim();
+  const nameAr = el.editCatNameAr.value.trim();
+  const nameKu = el.editCatNameKu.value.trim();
+  const file = el.editCatImageFile.files[0];
+
+  let imageUrl = el.editCatImgPreview.src;
+
+  if (file) {
+    try {
+      imageUrl = await DB.compressAndConvertImage(file);
+    } catch (err) {
+      showToast(T[currentAdminLang].errorCompress, "error");
+      return;
+    }
+  }
+
+  // Update category
+  categories[catIndex] = {
+    ...categories[catIndex],
+    name: { en: nameEn, ar: nameAr, ku: nameKu },
+    image: imageUrl
+  };
+
+  DB.saveCategories(categories);
+  showToast(T[currentAdminLang].successEditCat, "success");
+
+  closeEditCategoryModal();
+  refreshCategoriesDropdowns();
+  renderManageCategories();
 }
 
 // 6. Add Item Logic
@@ -806,4 +984,23 @@ function saveLocationSettings(event) {
 
   DB.saveSettings(settings);
   showToast(T[currentAdminLang].successLocation, "success");
+}
+
+// 11. Save Name Settings
+function saveNameSettings(event) {
+  event.preventDefault();
+
+  const settings = DB.getSettings();
+
+  settings.restaurantName = {
+    en: (el.settingNameEn.value || "").trim(),
+    ar: (el.settingNameAr.value || "").trim(),
+    ku: (el.settingNameKu.value || "").trim()
+  };
+
+  DB.saveSettings(settings);
+  showToast(T[currentAdminLang].successName, "success");
+  
+  // Re-update the UI so it reflects immediately
+  updateBrandingPreload();
 }
